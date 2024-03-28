@@ -11,11 +11,8 @@ struct Line {
     Line(int L, int R)
     : L(L), R(R) {}
     void operator << (std::istream &input) {
-        int val{};
-        input >> val;
-        this->L = val;
-        input >> val;
-        this->R = val;
+        input >> this->L;
+        input >> this->R;
     }
     int L{};
     int R{};
@@ -25,7 +22,6 @@ class Line_comparator_left {
 public:
     Line_comparator_left() = default;
     bool operator () (const Line &l1, const Line &l2) {
-        // if (l1.L == l2.L) return l1.R < l2.R;
         return l1.L < l2.L;
     }
 };
@@ -34,7 +30,6 @@ class Line_comparator_right {
 public:
     Line_comparator_right() = default;
     bool operator () (const Line &l1, const Line &l2) {
-        // if (l1.R == l2.R) return l1.R < l2.R;
         return l1.R < l2.R;
     }
 };
@@ -59,11 +54,12 @@ public:
         array = new T[capacity];
         for (int i{}; i < length; i++) array[i] = other.array[i];
     }
-    void operator = (const Array &other) {
-        Array *new_array = new Array(other.array, other.length);
-        this->array = new_array->array;
-        this->capacity = new_array->capacity;
-        this->length = new_array->length;
+    Array &operator = (const Array &other) {
+        capacity = other.capacity;
+        length = other.length;
+        array = new T[length];
+        for (int i{}; i < length; i++) array[i] = other.array[i];
+        return *this;
     }
     T &operator [] (int index) {
         return array[index];
@@ -113,10 +109,8 @@ template <typename T, typename Comparator = std::less<T>>
 void merge(T *array_1, T *array_2, int length_1, int length_2, Comparator cmp = Comparator());
 void run(std::istream &input, std::ostream &output);
 int do_logic(Array<Line> &array);
-void merge_lines(Array<Line> &array);
 void test_Line();
 void test_merge_sort();
-void test_merge_lines();
 void test_run();
 void test();
 
@@ -148,51 +142,31 @@ int do_logic(Array<Line> &array_left) {
     int current_point {array_left[0].L};
     int next_point {current_point};
     int index_left{}, index_right{};
+    int left_point = array_left[index_left].L;
+    int right_point = array_right[index_right].R;
     int count{}, value{};
-    while (current_point < array_right[array_right.get_length() - 1].R) {
-        if (array_left[index_left].L < array_right[index_right].R) {
-            next_point = array_left[index_left].L;
+    while (index_left < array_left.get_length() && index_right < array_right.get_length()) {
+        left_point = array_left[index_left].L;
+        right_point = array_right[index_right].R;
+        if (left_point < right_point) {
+            next_point = left_point;
             if (count) {
                 value += next_point - current_point;
-                current_point = next_point;
             }
-            count++;
             index_left++;
+            count++;
         } else {
-            next_point = array_right[index_right].R;
-            index_right++;
+            next_point = right_point;
             if (count) {
                 value += next_point - current_point;
-                current_point = next_point;
             }
+            index_right++;            
             count--;
         }
+        current_point = next_point;
     }
+    value += array_right[array_right.get_length() - 1].R - current_point;
     return value;
-}
-
-void merge_lines(Array<Line> &array) {
-    Array<Line> new_array;
-    for (int i{}; i < array.get_length(); i++) {
-        if (i == array.get_length() - 1) {
-            new_array.push(array[array.get_length() - 1]);
-            break;
-        }
-        if (array[i].R >= array[i + 1].L) {
-            if (array[i].L < array[i + 1].R) {
-                Line new_line(array[i].L, array[i + 1].R);
-                new_array.push(new_line);
-            } else {
-                Line new_line(array[i].L, array[i].R);
-                new_array.push(new_line);
-            }
-            i++;
-        } else {
-            Line new_line(array[i].L, array[i].R);
-            new_array.push(new_line);
-        }
-    }
-    array = new_array;
 }
 
 template <typename T, typename Comparator>
@@ -288,24 +262,6 @@ void test_merge_sort() {
     std::cout << "merge sort test OK" << std::endl;
 }
 
-void test_merge_lines() {
-    {
-        Array<Line> array;
-        Line line_1(1, 2);
-        Line line_2(2, 3);
-        Line line_3(4, 5);
-        array.push(line_1);
-        array.push(line_2);
-        array.push(line_3);
-        merge_lines(array);
-        assert(array[0].L == 1);
-        assert(array[0].R == 3);
-        assert(array[1].L == 4);
-        assert(array[1].R == 5);
-    }
-    std::cout << "merge_lines test OK" << std::endl;
-}
-
 void test_run() {
     {
         std::stringstream input, output;
@@ -345,6 +301,5 @@ void test_run() {
 void test() {
     test_Line();
     test_merge_sort();
-    test_merge_lines();
     test_run();
 }
