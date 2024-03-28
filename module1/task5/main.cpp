@@ -116,8 +116,8 @@ void test();
 
 int main() {
 
-    test();
-    // run(std::cin, std::cout);
+    // test();
+    run(std::cin, std::cout);
 
     return 0;
 }
