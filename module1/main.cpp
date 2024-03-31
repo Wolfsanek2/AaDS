@@ -24,7 +24,7 @@ void test_run() {
         input << "3" std::endl;
         input << "4 1000000 7" << std::endl;
         run(input, output);
-        
+        assert(output.str() == "4 1000000 7\n");
     }
     std::cout << "run test OK" << std::endl;
 }
