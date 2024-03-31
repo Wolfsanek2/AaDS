@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <cassert>
 
 void run(std::istream &input, std::ostream &output);
 void test_run();
@@ -19,7 +20,11 @@ void run(std::istream &input, std::ostream &output) {
 
 void test_run() {
     {
-        std::s
+        std::stringstream input, output;
+        input << "3" std::endl;
+        input << "4 1000000 7" << std::endl;
+        run(input, output);
+        
     }
     std::cout << "run test OK" << std::endl;
 }
