@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 void run(std::istream &input, std::ostream &output);
 void test_run();
@@ -18,7 +19,7 @@ void run(std::istream &input, std::ostream &output) {
 
 void test_run() {
     {
-        
+        std::s
     }
     std::cout << "run test OK" << std::endl;
 }
