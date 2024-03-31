@@ -12,7 +12,7 @@
 #include <cassert>
 
 template <typename T, typename Comparator = std::less<T>>
-int partition(T *arr, int length, Comparator cmp = Comparator());
+int partition(T *arr, int left, int right, Comparator cmp = Comparator());
 template <typename T, typename Comparator = std::less<T>>
 int kth_statistic(T *arr, int length, double k, Comparator cmp = Comparator());
 void run(std::istream &input, std::ostream &output);
@@ -22,8 +22,8 @@ void test();
 
 int main() {
 
-    test();
-    // run(std::cin, std::cout);
+    // test();
+    run(std::cin, std::cout);
 
     return 0;
 }
@@ -37,55 +37,55 @@ int partition(T *arr, int left, int right, Comparator cmp) {
     if (value_1 < value_2 && value_1 < value_3) {
         if (value_2 < value_3) {
             pivot = value_2;
-            pivot_index = left + length / 2;
+            pivot_index = (left + right) / 2;
         } else {
             pivot = value_3;
-            pivot_index = left + length - 1;
+            pivot_index = right;
         }
     } else if (value_2 < value_1 && value_2 < value_3) {
         if (value_1 < value_3) {
             pivot = value_1;
-            pivot_index = 0;
+            pivot_index = left;
         } else {
             pivot = value_3;
-            pivot_index = length - 1;
+            pivot_index = right;
         }
     } else {
         if (value_1 < value_2) {
             pivot = value_1;
-            pivot_index = 0;
+            pivot_index = left;
         } else {
             pivot = value_2;
-            pivot_index = length / 2;
+            pivot_index = (left + right) / 2;
         }
     }
-    std::swap(arr[pivot_index], arr[0]);
-    int i = length - 1, j = length - 1;
-    while (i > 0) {
+    std::swap(arr[pivot_index], arr[left]);
+    int i = right, j = right;
+    while (i > left) {
         while (cmp(arr[i], pivot)) i--;
-        if (i > 0) {
+        if (i > left) {
             std::swap(arr[i], arr[j]);
             i--;
             j--;
         }
     }
-    std::swap(arr[0], arr[j]);
+    std::swap(arr[left], arr[j]);
     return j;
 }
 
 template <typename T, typename Comparator>
 int kth_statistic(T *arr, int length, double k, Comparator cmp) {
     int k_pos = k * length;
-    int pos = partition(arr, length, cmp);
+    int left{0}, right{length - 1};
+    int pos = partition(arr, left, right, cmp);
     int value{arr[pos]};
-    int current_length {length};
     while (k_pos != pos) {
         if (pos < k_pos) {
-            current_length = length - pos - 1;
-            pos = partition(arr + pos + 1, current_length, cmp) + pos + 1;
+            left = pos + 1;
+            pos = partition(arr, left, right, cmp);
         } else {
-            current_length = pos;
-            pos = partition(arr, pos, cmp);
+            right = pos - 1;
+            pos = partition(arr, left, right, cmp);
         }
         value = arr[pos];
     }
@@ -114,7 +114,7 @@ void test_partition() {
     {
         int array[] = {1, 2, 3, 4, 5};
         int length = 5;
-        int index = partition(array, length);
+        int index = partition(array, 0, length - 1);
         assert(array[0] == 1);
         assert(array[1] == 2);
         assert(array[2] == 3);
@@ -125,7 +125,7 @@ void test_partition() {
     {
         int array[] = {5, 1, 3, 4, 2};
         int length = 5;
-        int index = partition(array, length);
+        int index = partition(array, 0, length - 1);
         assert(array[0] == 2);
         assert(array[1] == 1);
         assert(array[2] == 3);
@@ -203,7 +203,7 @@ void test_run() {
             }
             std::cout << std::endl;
             run(input, output);
-            std::cout << "output: " << output.str() << std::endl;
+            std::cout << "output: " << std::endl << output.str() << std::endl;
         }
     }
     std::cout << "run test OK" << std::endl;
