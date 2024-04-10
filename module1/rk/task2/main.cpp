@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 class Stack {
 public:
@@ -70,5 +71,8 @@ private:
 };
 
 int main() {
+    std::string str1, str2;
+    std::cin >> str1 >> str2;
+
     return 0;
 }
