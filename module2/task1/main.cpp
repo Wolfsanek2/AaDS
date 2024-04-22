@@ -131,7 +131,9 @@ void run(std::istream &input, std::ostream &output) {
 }
 
 void test_run() {
-    
+    {
+        
+    }
 }
 
 void test() {
