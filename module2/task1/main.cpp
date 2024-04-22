@@ -116,6 +116,7 @@ private:
 
 void run(std::istream &input, std::ostream &output);
 void test();
+void test_run();
 
 int main() {
 
@@ -127,6 +128,10 @@ int main() {
 
 void run(std::istream &input, std::ostream &output) {
 
+}
+
+void test_run() {
+    
 }
 
 void test() {
