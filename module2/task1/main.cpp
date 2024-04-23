@@ -1,5 +1,12 @@
+// Реализуйте структуру данных типа “множество строк” на основе динамической
+// хеш-таблицы с открытой адресацией. Хранимые строки непустые и состоят из строчных
+// латинских букв.
+// 1_2. Для разрешения коллизий используйте двойное хеширование.
+
 #include <iostream>
+#include <sstream>
 #include <vector>
+#include <cassert>
 
 const size_t INITIAL_SIZE = 8;
 
@@ -17,8 +24,8 @@ template <typename T, typename Hasher>
 class HashTable {
 public:
     HashTable(size_t initial_size = INITIAL_SIZE) 
-    : table(initial_size, HashTableData()), size(0) {}
-    ~HashTable();
+    : table(initial_size, HashTableData<T>()), size(0), hasher_1(Hasher(113)), hasher_2(Hasher(313)) {}
+    ~HashTable() = default;
 
     bool add(const T &key) {
         if (size > 0.75 * table.size()) grow();
@@ -76,19 +83,19 @@ public:
     }
 private:
     void grow() {
-        size_t new_size = table.size() * 2;
-        std::vector<HashTableData<T>> new_table(new_size);
-        for (int i = 0; i < table.size(); i++) {
-            if (table[i].state == 1) {
-                size_t index = get_index(table[i].key);
-                size_t new_index = h(table[i].key) % new_size;
-                new_table[new_index] = table[index];
+        std::vector<HashTableData<T>> old_table = table;
+        size_t new_size = old_table.size() * 2;
+        std::vector<HashTableData<T>> new_table(new_size, HashTableData<T>());
+        table = new_table;
+        size = 0;
+        for (int i = 0; i < old_table.size(); i++) {
+            if (old_table[i].state == 1) {
+                add(old_table[i].key);
             }
         }
-        table = new_table;
     }
     size_t h(const T &key, int i) {
-        return (hasher_1(key) + hasher_2(key) * i);
+        return (hasher_1(key) + (hasher_2(key) * 2 + 1) * i);
     }
     size_t get_index(const T &key, int i) {
         return h(key, i) % table.size();
@@ -100,7 +107,7 @@ private:
 
 class StringHasher {
 public:
-    StringHasher(size_t prime = 113)
+    StringHasher(size_t prime)
     : prime(prime) {}
 
     size_t operator () (const std::string &str) {
@@ -115,27 +122,98 @@ private:
 };
 
 void run(std::istream &input, std::ostream &output);
-void test();
+void test_HashTable();
 void test_run();
+void test();
 
 int main() {
 
+    // test();
     run(std::cin, std::cout);
-    test();
 
     return 0;
 }
 
 void run(std::istream &input, std::ostream &output) {
+    HashTable<std::string, StringHasher> table;
+    char op;
+    std::string key;
+    while (input >> op >> key) {
+        switch (op) {
+            case '+':
+                output << (table.add(key) ? "OK" : "FAIL") << std::endl;
+                break;
+            case '-':
+                output << (table.remove(key) ? "OK" : "FAIL") << std::endl;
+                break;
+            case '?':
+                output << (table.has(key) ? "OK" : "FAIL") << std::endl;
+                break;
+        }
+    }
+}
 
+void test_HashTable() {
+    {
+        HashTable<std::string, StringHasher> table;
+        assert(table.has("1") == 0);
+        assert(table.has("1") == 0);
+        assert(table.remove("1") == 0);
+        assert(table.remove("1") == 0);
+        assert(table.add("1") == 1);
+        assert(table.add("1") == 0);
+        assert(table.has("1") == 1);
+        assert(table.has("1") == 1);
+        assert(table.remove("1") == 1);
+        assert(table.remove("1") == 0);
+        assert(table.has("1") == 0);
+        assert(table.has("1") == 0);
+        assert(table.add("1") == 1);
+    }
+    {
+        HashTable<std::string, StringHasher> table;
+        assert(table.add("0") == 1);
+        assert(table.add("1") == 1);
+        assert(table.add("2") == 1);
+        assert(table.add("3") == 1);
+        assert(table.add("4") == 1);
+        assert(table.add("5") == 1);
+        assert(table.add("6") == 1);
+        assert(table.add("7") == 1);
+        assert(table.add("8") == 1);
+        assert(table.add("9") == 1);
+        assert(table.add("10") == 1);
+        assert(table.add("11") == 1);
+        assert(table.add("12") == 1);
+        assert(table.add("13") == 1);
+        assert(table.add("14") == 1);
+        assert(table.add("15") == 1);
+        assert(table.add("16") == 1);
+        assert(table.add("17") == 1);
+        assert(table.add("18") == 1);
+        assert(table.add("19") == 1);
+        assert(table.add("20") == 1);
+    }
+    std::cout << "HashTable test OK" << std::endl;
 }
 
 void test_run() {
     {
-        
+        std::stringstream input, output;
+        input << "+ hello" << std::endl;
+        input << "+ bye" << std::endl;
+        input << "? bye" << std::endl;
+        input << "+ bye" << std::endl;
+        input << "- bye" << std::endl;
+        input << "? bye" << std::endl;
+        input << "? hello" << std::endl;
+        run(input, output);
+        assert(output.str() == "OK\nOK\nOK\nFAIL\nOK\nFAIL\nOK\n");
     }
+    std::cout << "run test OK" << std::endl;
 }
 
 void test() {
-    
+    test_HashTable();
+    test_run();
 }
