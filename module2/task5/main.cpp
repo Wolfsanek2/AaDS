@@ -268,10 +268,6 @@ void copy_stream(IInputStream &input, IOutputStream &output) {
 }
 
 void Encode(IInputStream &original, IOutputStream &compressed) {
-    // Тест
-    // copy_stream(original, compressed);
-    // return;
-
     // Считываем ввод в буфер
     Buffer input_buffer;
     byte value = 0;
@@ -327,9 +323,12 @@ void Encode(IInputStream &original, IOutputStream &compressed) {
         }
     }
     // Запись числа последних бит
-    size_t number_of_last_bits = (output_buffer.get_number_of_last_bits() + message_buffer.get_number_of_last_bits()) % 8;
-    if (number_of_last_bits == 0) number_of_last_bits = 8;
-    output_buffer.write_byte(number_of_last_bits);
+    size_t number_of_last_bits = (output_buffer.get_number_of_last_bits() + message_buffer.get_number_of_last_bits() + 3) % 8;
+    byte mask = 1;
+    for (size_t i = 0; i < 3; i++) {
+        byte value = number_of_last_bits >> i;
+        output_buffer.write_bit(value & mask);
+    }
     // Запись кодированного сообщения
     while (message_buffer.can_read_byte()) {
         output_buffer.write_byte(message_buffer.read_byte());
@@ -347,10 +346,6 @@ void Encode(IInputStream &original, IOutputStream &compressed) {
 }
 
 void Decode(IInputStream &compressed, IOutputStream &original) {
-    // Тест
-    // copy_stream(compressed, original);
-    // return;
-
     // Запись в буфер
     Buffer input_buffer;
     byte value;
@@ -384,7 +379,12 @@ void Decode(IInputStream &compressed, IOutputStream &original) {
     HuffmanTree huffman_tree(stack.top());
     stack.pop();
     // Читаем число последних бит
-    size_t number_of_last_bits = input_buffer.read_byte();
+    size_t number_of_last_bits = 0;
+    for (int i = 0; i < 3; i++) {
+        byte value = input_buffer.read_bit() << i;
+        number_of_last_bits |= value;
+    }
+    if (!number_of_last_bits) number_of_last_bits = 8;
     // Считываем закодированную последовательность и записываем в буфер
     Buffer output_buffer;
     HuffmanNode *node = nullptr;
