@@ -40,7 +40,7 @@ public:
     ~SetGraph();
     void AddEdge(int from, int to, int weight);
     int VerticesCount() const;
-    std::vector<std::pair<int, int>> GetNextPairs(int vertex) const;
+    std::vector<Pair> GetNextPairs(int vertex) const;
 private:
     std::vector<std::unordered_set<std::pair<int, int>, PairHasher>> hash_tables;
 };
